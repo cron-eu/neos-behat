@@ -11,6 +11,8 @@ namespace CRON\Behat;
 use Behat\Gherkin\Node\TableNode;
 use CRON\Behat\Service\SampleImageService;
 use PHPUnit_Framework_Assert as Assert;
+use TYPO3\TYPO3CR\Domain\Model\Workspace;
+use TYPO3\TYPO3CR\Domain\Repository\WorkspaceRepository;
 
 trait NeosTrait
 {
@@ -26,6 +28,14 @@ trait NeosTrait
         if ($this->context === null) {
             /** @var \TYPO3\Neos\Domain\Repository\SiteRepository $siteRepository */
             $siteRepository = $this->objectManager->get(\TYPO3\Neos\Domain\Repository\SiteRepository::class);
+
+            /** @var WorkspaceRepository $workspaceRepository */
+            $workspaceRepository = $this->objectManager->get(WorkspaceRepository::class);
+            $liveWorkspace = $workspaceRepository->findByIdentifier('live');
+            if (!$liveWorkspace) {
+                $liveWorkspace = new Workspace('live');
+                $workspaceRepository->add($liveWorkspace);
+            }
 
             /** @var \TYPO3\TYPO3CR\Domain\Service\ContextFactoryInterface $contextFactory */
             $contextFactory = $this->objectManager->get(\TYPO3\TYPO3CR\Domain\Service\ContextFactoryInterface::class);
