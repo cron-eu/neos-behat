@@ -43,7 +43,7 @@ class FeatureContextBase extends \Behat\MinkExtension\Context\MinkContext
     /**
      * @var string
      */
-    protected $behatTestHelperObjectName = \TYPO3\Neos\Tests\Functional\Command\BehatTestHelper::class;
+    protected $behatTestHelperObjectName = \Neos\Neos\Tests\Functional\Command\BehatTestHelper::class;
 
     /**
      * @var \Neos\Flow\ObjectManagement\ObjectManagerInterface
@@ -99,8 +99,8 @@ class FeatureContextBase extends \Behat\MinkExtension\Context\MinkContext
         // run the nodeindex:build to create the Elasticsearch index, if missing
         $this->iRunNodeindex();
 
-        /** @var \TYPO3\Neos\Domain\Service\SiteImportService $siteImportService */
-        $siteImportService = $this->objectManager->get(\TYPO3\Neos\Domain\Service\SiteImportService::class);
+        /** @var \Neos\Neos\Domain\Service\SiteImportService $siteImportService */
+        $siteImportService = $this->objectManager->get(\Neos\Neos\Domain\Service\SiteImportService::class);
         $siteImportService->importFromPackage($packageKey);
 
         $this->getSubcontext('flow')->persistAll();
@@ -112,7 +112,7 @@ class FeatureContextBase extends \Behat\MinkExtension\Context\MinkContext
      */
     public function iRunNodeindex()
     {
-        /** @var \TYPO3\Neos\Domain\Service\SiteImportService $siteImportService */
+        /** @var \Neos\Neos\Domain\Service\SiteImportService $siteImportService */
         /** @var \Flowpack\ElasticSearch\ContentRepositoryAdaptor\Command\NodeIndexCommandController $nodeIndexCommandController */
         $nodeIndexCommandController = $this->objectManager->get(\Flowpack\ElasticSearch\ContentRepositoryAdaptor\Command\NodeIndexCommandController::class);
         $nodeIndexCommandController->buildCommand();
@@ -172,15 +172,15 @@ class FeatureContextBase extends \Behat\MinkExtension\Context\MinkContext
     public function theFollowingUsersExist(TableNode $table)
     {
         $rows = $table->getHash();
-        /** @var \TYPO3\Neos\Domain\Service\UserService $userService */
-        $userService = $this->objectManager->get(\TYPO3\Neos\Domain\Service\UserService::class);
+        /** @var \Neos\Neos\Domain\Service\UserService $userService */
+        $userService = $this->objectManager->get(\Neos\Neos\Domain\Service\UserService::class);
         /** @var \Neos\Party\Domain\Repository\PartyRepository $partyRepository */
         $partyRepository = $this->objectManager->get(\Neos\Party\Domain\Repository\PartyRepository::class);
         /** @var \Neos\Flow\Security\AccountRepository $accountRepository */
         $accountRepository = $this->objectManager->get(\Neos\Flow\Security\AccountRepository::class);
         foreach ($rows as $row) {
             $roleIdentifiers = array_map(function ($role) {
-                return 'TYPO3.Neos:' . $role;
+                return 'Neos.Neos:' . $role;
             }, Arrays::trimExplode(',', $row['roles']));
             if ($user = $userService->getUser($row['username'])) {
                 $userService->deleteUser($user);

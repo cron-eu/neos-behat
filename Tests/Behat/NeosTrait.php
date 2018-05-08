@@ -18,14 +18,14 @@ trait NeosTrait
     protected $context = null;
 
     /**
-     * @return \TYPO3\Neos\Domain\Service\ContentContext
+     * @return \Neos\Neos\Domain\Service\ContentContext
      */
     protected function getContext()
     {
 
         if ($this->context === null) {
-            /** @var \TYPO3\Neos\Domain\Repository\SiteRepository $siteRepository */
-            $siteRepository = $this->objectManager->get(\TYPO3\Neos\Domain\Repository\SiteRepository::class);
+            /** @var \Neos\Neos\Domain\Repository\SiteRepository $siteRepository */
+            $siteRepository = $this->objectManager->get(\Neos\Neos\Domain\Repository\SiteRepository::class);
 
             /** @var \TYPO3\TYPO3CR\Domain\Service\ContextFactoryInterface $contextFactory */
             $contextFactory = $this->objectManager->get(\TYPO3\TYPO3CR\Domain\Service\ContextFactoryInterface::class);
