@@ -1,9 +1,9 @@
 {
     "name": "cron/neos-behat",
-    "type": "typo3-flow-package",
+    "type": "neos-package",
     "description": "Neos Behat Addons",
     "require": {
-        "typo3/flow": "^3.0.0"
+        "neos/flow": "^4.0.0"
     },
     "autoload": {
         "psr-4": {
