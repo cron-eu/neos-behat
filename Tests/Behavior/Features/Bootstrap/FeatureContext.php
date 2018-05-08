@@ -6,7 +6,7 @@
  * Time: 11:51
  */
 
-use TYPO3\Flow\Annotations as Flow;
+use Neos\Flow\Annotations as Flow;
 
 require_once(__DIR__ . '/../../../Behat/FeatureContextBase.php');
 

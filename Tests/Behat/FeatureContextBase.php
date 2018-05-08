@@ -8,15 +8,15 @@
 
 namespace CRON\Behat;
 
-use TYPO3\Flow\Utility\Arrays;
+use Neos\Flow\Utility\Arrays;
 use Behat\Gherkin\Node\TableNode;
 use PHPUnit_Framework_Assert as Assert;
 
 //require_once(__DIR__ . '/../../../../../../Application/Flowpack.Behat/Tests/Behat/FlowContext.php');
 require_once(__DIR__ . '/FlowContext.php');
 require_once(__DIR__ . '/NeosTrait.php');
-require_once(__DIR__ . '/../../../../Framework/TYPO3.Flow/Tests/Behavior/Features/Bootstrap/IsolatedBehatStepsTrait.php');
-require_once(__DIR__ . '/../../../../Framework/TYPO3.Flow/Tests/Behavior/Features/Bootstrap/SecurityOperationsTrait.php');
+require_once(__DIR__ . '/../../../../Framework/Neos.Flow/Tests/Behavior/Features/Bootstrap/IsolatedBehatStepsTrait.php');
+require_once(__DIR__ . '/../../../../Framework/Neos.Flow/Tests/Behavior/Features/Bootstrap/SecurityOperationsTrait.php');
 
 if (file_exists(__DIR__ . '/../../../../Application/TYPO3.TYPO3CR/Tests/Behavior/Features/Bootstrap/NodeOperationsTrait.php')) {
     require_once(__DIR__ . '/../../../../Application/TYPO3.TYPO3CR/Tests/Behavior/Features/Bootstrap/NodeOperationsTrait.php');
@@ -36,8 +36,8 @@ class FeatureContextBase extends \Behat\MinkExtension\Context\MinkContext
 {
 
     use \TYPO3\TYPO3CR\Tests\Behavior\Features\Bootstrap\NodeOperationsTrait;
-    use \TYPO3\Flow\Tests\Behavior\Features\Bootstrap\IsolatedBehatStepsTrait;
-    use \TYPO3\Flow\Tests\Behavior\Features\Bootstrap\SecurityOperationsTrait;
+    use \Neos\Flow\Tests\Behavior\Features\Bootstrap\IsolatedBehatStepsTrait;
+    use \Neos\Flow\Tests\Behavior\Features\Bootstrap\SecurityOperationsTrait;
     use NeosTrait;
 
     /**
@@ -46,12 +46,12 @@ class FeatureContextBase extends \Behat\MinkExtension\Context\MinkContext
     protected $behatTestHelperObjectName = \TYPO3\Neos\Tests\Functional\Command\BehatTestHelper::class;
 
     /**
-     * @var \TYPO3\Flow\ObjectManagement\ObjectManagerInterface
+     * @var \Neos\Flow\ObjectManagement\ObjectManagerInterface
      */
     protected $objectManager;
 
     /**
-     * @return \TYPO3\Flow\ObjectManagement\ObjectManagerInterface
+     * @return \Neos\Flow\ObjectManagement\ObjectManagerInterface
      */
     protected function getObjectManager()
     {
@@ -131,7 +131,7 @@ class FeatureContextBase extends \Behat\MinkExtension\Context\MinkContext
         );
         if (is_array($directories)) {
             foreach ($directories as $directory) {
-                \TYPO3\Flow\Utility\Files::removeDirectoryRecursively($directory);
+                \Neos\Flow\Utility\Files::removeDirectoryRecursively($directory);
             }
         }
     }
@@ -150,7 +150,7 @@ class FeatureContextBase extends \Behat\MinkExtension\Context\MinkContext
         );
         if (is_array($directories)) {
             foreach ($directories as $directory) {
-                \TYPO3\Flow\Utility\Files::removeDirectoryRecursively($directory);
+                \Neos\Flow\Utility\Files::removeDirectoryRecursively($directory);
             }
         }
     }
@@ -176,8 +176,8 @@ class FeatureContextBase extends \Behat\MinkExtension\Context\MinkContext
         $userService = $this->objectManager->get(\TYPO3\Neos\Domain\Service\UserService::class);
         /** @var \TYPO3\Party\Domain\Repository\PartyRepository $partyRepository */
         $partyRepository = $this->objectManager->get(\TYPO3\Party\Domain\Repository\PartyRepository::class);
-        /** @var \TYPO3\Flow\Security\AccountRepository $accountRepository */
-        $accountRepository = $this->objectManager->get(\TYPO3\Flow\Security\AccountRepository::class);
+        /** @var \Neos\Flow\Security\AccountRepository $accountRepository */
+        $accountRepository = $this->objectManager->get(\Neos\Flow\Security\AccountRepository::class);
         foreach ($rows as $row) {
             $roleIdentifiers = array_map(function ($role) {
                 return 'TYPO3.Neos:' . $role;

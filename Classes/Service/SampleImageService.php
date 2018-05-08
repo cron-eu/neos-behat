@@ -8,7 +8,7 @@
 
 namespace CRON\Behat\Service;
 
-use TYPO3\Flow\Annotations as Flow;
+use Neos\Flow\Annotations as Flow;
 use TYPO3\Media\Domain\Model\Image;
 
 /**
@@ -19,7 +19,7 @@ class SampleImageService
 
     /**
      * @Flow\Inject
-     * @var \TYPO3\Flow\ResourceManagement\ResourceManager
+     * @var \Neos\Flow\ResourceManagement\ResourceManager
      */
     protected $resourceManager;
 
@@ -27,7 +27,7 @@ class SampleImageService
      * Inject PersistenceManagerInterface
      *
      * @Flow\Inject
-     * @var \TYPO3\Flow\Persistence\PersistenceManagerInterface
+     * @var \Neos\Flow\Persistence\PersistenceManagerInterface
      */
     protected $persistenceManager;
 
