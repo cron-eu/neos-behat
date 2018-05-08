@@ -18,10 +18,10 @@ require_once(__DIR__ . '/NeosTrait.php');
 require_once(__DIR__ . '/../../../../Framework/Neos.Flow/Tests/Behavior/Features/Bootstrap/IsolatedBehatStepsTrait.php');
 require_once(__DIR__ . '/../../../../Framework/Neos.Flow/Tests/Behavior/Features/Bootstrap/SecurityOperationsTrait.php');
 
-if (file_exists(__DIR__ . '/../../../../Application/TYPO3.TYPO3CR/Tests/Behavior/Features/Bootstrap/NodeOperationsTrait.php')) {
-    require_once(__DIR__ . '/../../../../Application/TYPO3.TYPO3CR/Tests/Behavior/Features/Bootstrap/NodeOperationsTrait.php');
+if (file_exists(__DIR__ . '/../../../../Application/Neos.ContentRepository/Tests/Behavior/Features/Bootstrap/NodeOperationsTrait.php')) {
+    require_once(__DIR__ . '/../../../../Application/Neos.ContentRepository/Tests/Behavior/Features/Bootstrap/NodeOperationsTrait.php');
 } else {
-    require_once(__DIR__ . '/../../../../Neos/TYPO3.TYPO3CR/Tests/Behavior/Features/Bootstrap/NodeOperationsTrait.php');
+    require_once(__DIR__ . '/../../../../Neos/Neos.ContentRepository/Tests/Behavior/Features/Bootstrap/NodeOperationsTrait.php');
 }
 
 /**
@@ -35,7 +35,7 @@ if (file_exists(__DIR__ . '/../../../../Application/TYPO3.TYPO3CR/Tests/Behavior
 class FeatureContextBase extends \Behat\MinkExtension\Context\MinkContext
 {
 
-    use \TYPO3\TYPO3CR\Tests\Behavior\Features\Bootstrap\NodeOperationsTrait;
+    use \Neos\ContentRepository\Tests\Behavior\Features\Bootstrap\NodeOperationsTrait;
     use \Neos\Flow\Tests\Behavior\Features\Bootstrap\IsolatedBehatStepsTrait;
     use \Neos\Flow\Tests\Behavior\Features\Bootstrap\SecurityOperationsTrait;
     use NeosTrait;
@@ -83,8 +83,8 @@ class FeatureContextBase extends \Behat\MinkExtension\Context\MinkContext
         if ($this->isolated === true) {
             $this->callStepInSubProcess(__METHOD__);
         } else {
-            $contentDimensionRepository = $this->getObjectManager()->get(\TYPO3\TYPO3CR\Domain\Repository\ContentDimensionRepository::class);
-            /** @var \TYPO3\TYPO3CR\Domain\Repository\ContentDimensionRepository $contentDimensionRepository */
+            $contentDimensionRepository = $this->getObjectManager()->get(\Neos\ContentRepository\Domain\Repository\ContentDimensionRepository::class);
+            /** @var \Neos\ContentRepository\Domain\Repository\ContentDimensionRepository $contentDimensionRepository */
 
             // Set the content dimensions to a fixed value for Behat scenarios
             $contentDimensionRepository->setDimensionsConfiguration([]);

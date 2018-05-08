@@ -27,8 +27,8 @@ trait NeosTrait
             /** @var \Neos\Neos\Domain\Repository\SiteRepository $siteRepository */
             $siteRepository = $this->objectManager->get(\Neos\Neos\Domain\Repository\SiteRepository::class);
 
-            /** @var \TYPO3\TYPO3CR\Domain\Service\ContextFactoryInterface $contextFactory */
-            $contextFactory = $this->objectManager->get(\TYPO3\TYPO3CR\Domain\Service\ContextFactoryInterface::class);
+            /** @var \Neos\ContentRepository\Domain\Service\ContextFactoryInterface $contextFactory */
+            $contextFactory = $this->objectManager->get(\Neos\ContentRepository\Domain\Service\ContextFactoryInterface::class);
             $this->context = $contextFactory->create([
                 'currentSite' => $siteRepository->findFirstOnline(),
                 'invisibleContentShown' => true,
@@ -38,13 +38,13 @@ trait NeosTrait
         return $this->context;
     }
 
-    /** @var \TYPO3\TYPO3CR\Domain\Model\NodeInterface */
+    /** @var \Neos\ContentRepository\Domain\Model\NodeInterface */
     protected $node = null;
     /** @var string */
     protected $nodeIdentifier = null;
 
     /**
-     * @return \TYPO3\TYPO3CR\Domain\Model\NodeInterface
+     * @return \Neos\ContentRepository\Domain\Model\NodeInterface
      */
     protected function getNode()
     {
@@ -55,7 +55,7 @@ trait NeosTrait
         return $this->node;
     }
 
-    protected function setNode(\TYPO3\TYPO3CR\Domain\Model\NodeInterface $node)
+    protected function setNode(\Neos\ContentRepository\Domain\Model\NodeInterface $node)
     {
         $this->node = $node;
         $this->nodeIdentifier = $node->getIdentifier();
@@ -64,12 +64,12 @@ trait NeosTrait
     protected $nodeTypeManager;
 
     /**
-     * @return \TYPO3\TYPO3CR\Domain\Service\NodeTypeManager
+     * @return \Neos\ContentRepository\Domain\Service\NodeTypeManager
      */
     protected function getNodeTypeManager()
     {
         if ($this->nodeTypeManager === null) {
-            $this->nodeTypeManager = $this->objectManager->get(\TYPO3\TYPO3CR\Domain\Service\NodeTypeManager::class);
+            $this->nodeTypeManager = $this->objectManager->get(\Neos\ContentRepository\Domain\Service\NodeTypeManager::class);
         }
 
         return $this->nodeTypeManager;
@@ -80,7 +80,7 @@ trait NeosTrait
      *
      * @param $path string absolute path, relative to /sites/my-site-name, e.g. /home
      *
-     * @return \TYPO3\TYPO3CR\Domain\Model\NodeInterface
+     * @return \Neos\ContentRepository\Domain\Model\NodeInterface
      */
     protected function getNodeForPath($path)
     {
