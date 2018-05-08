@@ -145,8 +145,8 @@ class FeatureContextBase extends \Behat\MinkExtension\Context\MinkContext
     public function clearContentCache()
     {
         $directories = array_merge(
-            glob(FLOW_PATH_DATA . 'Temporary/*/Cache/Data/TYPO3_TypoScript_Content'),
-            glob(FLOW_PATH_DATA . 'Temporary/*/*/Cache/Data/TYPO3_TypoScript_Content')
+            glob(FLOW_PATH_DATA . 'Temporary/*/Cache/Data/Neos_Fusion_Content'),
+            glob(FLOW_PATH_DATA . 'Temporary/*/*/Cache/Data/Neos_Fusion_Content')
         );
         if (is_array($directories)) {
             foreach ($directories as $directory) {
