@@ -8,7 +8,7 @@
 
 namespace CRON\Behat;
 
-use Neos\Flow\Utility\Arrays;
+use Neos\Utility\Arrays;
 use Behat\Gherkin\Node\TableNode;
 use PHPUnit_Framework_Assert as Assert;
 
@@ -131,7 +131,7 @@ class FeatureContextBase extends \Behat\MinkExtension\Context\MinkContext
         );
         if (is_array($directories)) {
             foreach ($directories as $directory) {
-                \Neos\Flow\Utility\Files::removeDirectoryRecursively($directory);
+                \Neos\Utility\Files::removeDirectoryRecursively($directory);
             }
         }
     }
@@ -150,7 +150,7 @@ class FeatureContextBase extends \Behat\MinkExtension\Context\MinkContext
         );
         if (is_array($directories)) {
             foreach ($directories as $directory) {
-                \Neos\Flow\Utility\Files::removeDirectoryRecursively($directory);
+                \Neos\Utility\Files::removeDirectoryRecursively($directory);
             }
         }
     }
