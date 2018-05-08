@@ -46,12 +46,12 @@ class FeatureContextBase extends \Behat\MinkExtension\Context\MinkContext
     protected $behatTestHelperObjectName = \TYPO3\Neos\Tests\Functional\Command\BehatTestHelper::class;
 
     /**
-     * @var \TYPO3\Flow\Object\ObjectManagerInterface
+     * @var \TYPO3\Flow\ObjectManagement\ObjectManagerInterface
      */
     protected $objectManager;
 
     /**
-     * @return \TYPO3\Flow\Object\ObjectManagerInterface
+     * @return \TYPO3\Flow\ObjectManagement\ObjectManagerInterface
      */
     protected function getObjectManager()
     {
