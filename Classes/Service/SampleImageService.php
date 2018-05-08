@@ -9,7 +9,7 @@
 namespace CRON\Behat\Service;
 
 use Neos\Flow\Annotations as Flow;
-use TYPO3\Media\Domain\Model\Image;
+use Neos\Media\Domain\Model\Image;
 
 /**
  * @Flow\Scope("singleton")
@@ -33,14 +33,14 @@ class SampleImageService
 
     /**
      * @Flow\Inject
-     * @var \TYPO3\Media\Domain\Repository\ImageRepository
+     * @var \Neos\Media\Domain\Repository\ImageRepository
      */
     protected $imageRepository;
 
     /**
      * @param string $name image name (from Resources/Images)
      *
-     * @return \TYPO3\Media\Domain\Model\ImageInterface
+     * @return \Neos\Media\Domain\Model\ImageInterface
      */
     public function getSampleImage($name)
     {

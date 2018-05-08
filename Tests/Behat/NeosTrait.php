@@ -135,7 +135,7 @@ trait NeosTrait
                 $value = boolval($stringInput);
                 break;
 
-            case \TYPO3\Media\Domain\Model\ImageInterface::class:
+            case \Neos\Media\Domain\Model\ImageInterface::class:
                 if ($stringInput) {
                     /** @var SampleImageService $imageService */
                     $imageService = $this->objectManager->get(SampleImageService::class);
