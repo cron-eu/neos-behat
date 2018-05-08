@@ -174,8 +174,8 @@ class FeatureContextBase extends \Behat\MinkExtension\Context\MinkContext
         $rows = $table->getHash();
         /** @var \TYPO3\Neos\Domain\Service\UserService $userService */
         $userService = $this->objectManager->get(\TYPO3\Neos\Domain\Service\UserService::class);
-        /** @var \TYPO3\Party\Domain\Repository\PartyRepository $partyRepository */
-        $partyRepository = $this->objectManager->get(\TYPO3\Party\Domain\Repository\PartyRepository::class);
+        /** @var \Neos\Party\Domain\Repository\PartyRepository $partyRepository */
+        $partyRepository = $this->objectManager->get(\Neos\Party\Domain\Repository\PartyRepository::class);
         /** @var \Neos\Flow\Security\AccountRepository $accountRepository */
         $accountRepository = $this->objectManager->get(\Neos\Flow\Security\AccountRepository::class);
         foreach ($rows as $row) {
