@@ -96,9 +96,6 @@ class FeatureContextBase extends \Behat\MinkExtension\Context\MinkContext
      */
     public function iImportedTheSite($packageKey)
     {
-        // run the nodeindex:build to create the Elasticsearch index, if missing
-        $this->iRunNodeindex();
-
         /** @var \Neos\Neos\Domain\Service\SiteImportService $siteImportService */
         $siteImportService = $this->objectManager->get(\Neos\Neos\Domain\Service\SiteImportService::class);
         $siteImportService->importFromPackage($packageKey);
