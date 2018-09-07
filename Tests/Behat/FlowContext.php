@@ -2,7 +2,7 @@
 
 namespace CRON\Behat;
 
-require_once(__DIR__ . '/../../../../Application/Flowpack.Behat/Tests/Behat/FlowContext.php');
+require_once(__DIR__ . '/../../../../Application/Neos.Behat/Tests/Behat/FlowContext.php');
 
 /**
  * Created by PhpStorm.
@@ -10,7 +10,7 @@ require_once(__DIR__ . '/../../../../Application/Flowpack.Behat/Tests/Behat/Flow
  * Date: 12.03.16
  * Time: 09:22
  */
-class FlowContext extends \Flowpack\Behat\Tests\Behat\FlowContext
+class FlowContext extends \Neos\Behat\Tests\Behat\FlowContext
 {
 
     /**
