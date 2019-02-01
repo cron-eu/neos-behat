@@ -3,7 +3,7 @@
     "type": "neos-package",
     "description": "Neos Behat Addons",
     "require": {
-        "neos/flow": "^4.0.0"
+	    "typo3/neos": "~3.0"
     },
     "autoload": {
         "psr-4": {
