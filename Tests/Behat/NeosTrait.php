@@ -19,6 +19,13 @@ trait NeosTrait
     protected $workspaceName = 'live';
 
     /**
+     * @AfterScenario
+     */
+    public function resetWorkspace() {
+        $this->setWorkspace('live');
+    }
+
+    /**
      * @return \TYPO3\Neos\Domain\Service\ContentContext
      */
     protected function getContext()
