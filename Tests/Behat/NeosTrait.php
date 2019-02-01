@@ -16,6 +16,7 @@ trait NeosTrait
 {
 
     protected $context = null;
+    protected $workspaceName = 'live';
 
     /**
      * @return \TYPO3\Neos\Domain\Service\ContentContext
@@ -32,10 +33,21 @@ trait NeosTrait
             $this->context = $contextFactory->create([
                 'currentSite' => $siteRepository->findFirstOnline(),
                 'invisibleContentShown' => true,
+                'workspaceName' => $this->workspaceName,
             ]);
         }
 
         return $this->context;
+    }
+
+    /**
+     * Sets the workspace to be used for all subsequent operations
+     *
+     * @param $workspaceName string name of the new workspace, e.g. 'user-jdoe'
+     */
+    protected function setWorkspace($workspaceName) {
+        $this->workspaceName = $workspaceName;
+        $this->context = null;
     }
 
     /** @var \TYPO3\TYPO3CR\Domain\Model\NodeInterface */
@@ -235,4 +247,13 @@ trait NeosTrait
     {
         sleep($seconds);
     }
+
+    /**
+     * @Given /^I set the current workspace to "([^"]*)"$/
+     */
+    public function iSetTheCurrentWorkspaceTo($workspaceName)
+    {
+        $this->setWorkspace($workspaceName);
+    }
+
 }
