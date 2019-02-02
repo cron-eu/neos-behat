@@ -15,60 +15,47 @@ use PHPUnit_Framework_Assert as Assert;
 trait NeosTrait
 {
 
-    protected $context = null;
-    protected $workspaceName = 'live';
+    protected $context = [];
 
     /**
-     * @AfterScenario
-     */
-    public function resetWorkspace() {
-        $this->setWorkspace('live');
-    }
-
-    /**
+     * Get the context for the specific workspace. Subsequent calls will retrieve the same instance
+     *
+     * @param string $workspaceName workspace name, defaults to 'live'
+     *
      * @return \TYPO3\Neos\Domain\Service\ContentContext
      */
-    protected function getContext()
+    protected function getContext($workspaceName = 'live')
     {
 
-        if ($this->context === null) {
+        if (!isset($this->context[$workspaceName])) {
             /** @var \TYPO3\Neos\Domain\Repository\SiteRepository $siteRepository */
             $siteRepository = $this->objectManager->get(\TYPO3\Neos\Domain\Repository\SiteRepository::class);
 
             /** @var \TYPO3\TYPO3CR\Domain\Service\ContextFactoryInterface $contextFactory */
             $contextFactory = $this->objectManager->get(\TYPO3\TYPO3CR\Domain\Service\ContextFactoryInterface::class);
-            $this->context = $contextFactory->create([
+            $this->context[$workspaceName] = $contextFactory->create([
                 'currentSite' => $siteRepository->findFirstOnline(),
                 'invisibleContentShown' => true,
-                'workspaceName' => $this->workspaceName,
+                'workspaceName' => $workspaceName,
             ]);
         }
 
-        return $this->context;
-    }
-
-    /**
-     * Sets the workspace to be used for all subsequent operations
-     *
-     * @param $workspaceName string name of the new workspace, e.g. 'user-jdoe'
-     */
-    protected function setWorkspace($workspaceName) {
-        $this->workspaceName = $workspaceName;
-        $this->context = null;
+        return $this->context[$workspaceName];
     }
 
     /** @var \TYPO3\TYPO3CR\Domain\Model\NodeInterface */
     protected $node = null;
     /** @var string */
     protected $nodeIdentifier = null;
+    protected $nodeWorkspaceName = null;
 
     /**
      * @return \TYPO3\TYPO3CR\Domain\Model\NodeInterface
      */
     protected function getNode()
     {
-        if ($this->node === null && $this->nodeIdentifier !== null) {
-            $this->node = $this->getContext()->getNodeByIdentifier($this->nodeIdentifier);
+        if ($this->node === null && $this->nodeIdentifier !== null && $this->nodeWorkspaceName !== null) {
+            $this->node = $this->getContext($this->nodeWorkspaceName)->getNodeByIdentifier($this->nodeIdentifier);
         }
 
         return $this->node;
@@ -78,6 +65,7 @@ trait NeosTrait
     {
         $this->node = $node;
         $this->nodeIdentifier = $node->getIdentifier();
+        $this->nodeWorkspaceName = $node->getWorkspace()->getName();
     }
 
     protected $nodeTypeManager;
@@ -88,6 +76,7 @@ trait NeosTrait
     protected function getNodeTypeManager()
     {
         if ($this->nodeTypeManager === null) {
+
             $this->nodeTypeManager = $this->objectManager->get(\TYPO3\TYPO3CR\Domain\Service\NodeTypeManager::class);
         }
 
@@ -98,14 +87,16 @@ trait NeosTrait
      * Gets an existing node or page on path
      *
      * @param $path string absolute path, relative to /sites/my-site-name, e.g. /home
+     * @param string $workspace workspace name, defaults to 'live'
      *
      * @return \TYPO3\TYPO3CR\Domain\Model\NodeInterface
      */
-    protected function getNodeForPath($path)
+    protected function getNodeForPath($path, $workspace = 'live')
     {
-        $path = strpos('/sites', $path) === 0 ? $path : $this->getContext()->getCurrentSiteNode()->getPath() . $path;
+        $context = $this->getContext($workspace);
+        $path = strpos('/sites', $path) === 0 ? $path : $context->getCurrentSiteNode()->getPath() . $path;
 
-        return $this->getContext()->getNode($path);
+        return $context->getNode($path);
     }
 
     protected function persist()
@@ -113,7 +104,7 @@ trait NeosTrait
         $this->getSubcontext('flow')->persistAll();
         $this->resetNodeInstances();
         $this->node = null;
-        $this->context = null;
+        $this->context = [];
     }
 
     /**
@@ -178,7 +169,7 @@ trait NeosTrait
      */
     public function iSetThePageProperties(TableNode $table)
     {
-        Assert::assertNotNull($this->getNode());
+        Assert::assertNotNull($this->getNode(), 'Current node is NULL');
         foreach ($table->getRows() as $row) {
             list($propertyName, $propertyValue) = $row;
             $value = $this->propertyMapper($propertyName, $propertyValue);
@@ -194,9 +185,18 @@ trait NeosTrait
      */
     public function iCreateANewPageOfTypeOnPath($title, $type, $path)
     {
+        $this->iCreateANewPageOfTypeOnPathInWorkspace($title, $type, $path, 'live');
+    }
+
+    /**
+     * @Given /^I create a new Page "([^"]*)" of type "([^"]*)" on path "([^"]*)" in workspace "([^"]*)"$/
+     */
+    public function iCreateANewPageOfTypeOnPathInWorkspace($title, $type, $path, $workspace)
+    {
         $type = $this->getNodeTypeManager()->getNodeType($type);
-        $folder = $this->getNodeForPath($path);
+        $folder = $this->getNodeForPath($path, $workspace);
         $this->setNode($folder->createNode($title, $type));
+        Assert::assertNotNull($this->node);
         $this->persist();
     }
 
@@ -256,11 +256,13 @@ trait NeosTrait
     }
 
     /**
-     * @Given /^I set the current workspace to "([^"]*)"$/
+     * @Given /^I publish the current workspace$/
      */
-    public function iSetTheCurrentWorkspaceTo($workspaceName)
+    public function iPublishTheCurrentWorkspace()
     {
-        $this->setWorkspace($workspaceName);
+        Assert::assertNotNull($this->nodeWorkspaceName, 'no current workspace set');
+        $liveWorkspace = $this->getContext()->getWorkspace();
+        $this->getContext($this->nodeWorkspaceName)->getWorkspace()->publish($liveWorkspace);
+        $this->persist();
     }
-
 }
