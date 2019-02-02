@@ -265,4 +265,20 @@ trait NeosTrait
         $this->getContext($this->nodeWorkspaceName)->getWorkspace()->publish($liveWorkspace);
         $this->persist();
     }
+
+    /**
+     * @Given /^the page should be visible$/
+     */
+    public function thePageShouldBeVisible()
+    {
+        Assert::assertTrue($this->getNode()->isVisible());
+    }
+
+    /**
+     * @Given /^the page should not be visible$/
+     */
+    public function thePageShouldNotBeVisible()
+    {
+        Assert::assertFalse($this->getNode()->isVisible());
+    }
 }
