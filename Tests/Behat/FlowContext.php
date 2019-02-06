@@ -25,4 +25,11 @@ class FlowContext extends \Flowpack\Behat\Tests\Behat\FlowContext
         }
     }
 
+    /**
+     * @return \TYPO3\Flow\Core\Bootstrap
+     */
+    public function getBoostrap() {
+        return self::$bootstrap;
+    }
+
 }
