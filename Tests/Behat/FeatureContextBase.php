@@ -107,18 +107,6 @@ class FeatureContextBase extends MinkContext
     }
 
     /**
-     * @Given /^I run nodeindex:build$/
-     */
-    public function iRunNodeindex()
-    {
-        /** @var \Neos\Neos\Domain\Service\SiteImportService $siteImportService */
-        /** @var \Flowpack\ElasticSearch\ContentRepositoryAdaptor\Command\NodeIndexCommandController $nodeIndexCommandController */
-        $nodeIndexCommandController = $this->objectManager->get(\Flowpack\ElasticSearch\ContentRepositoryAdaptor\Command\NodeIndexCommandController::class);
-        $nodeIndexCommandController->buildCommand();
-        $nodeIndexCommandController->cleanupCommand();
-    }
-
-    /**
      * Clear the code cache.
      *
      * @BeforeScenario @clearcodecache
