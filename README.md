@@ -35,8 +35,20 @@ require_once(__DIR__ . '/../../../../../../Application/CRON.Behat/Tests/Behat/Fe
 
 class FeatureContext extends \CRON\Behat\FeatureContextBase {
 
+  use NeosTrait;
+  // use DumpContentTrait;
 }
 ```
+
+### Available Traits
+
+Several Add-Ons are available as FeatureContext Traits:
+
+| Trait Name | Description |
+| ---------- | ----------- |
+| `DumpContentTrait.php` | Use in a circleCI environment to dump the HTML content after each step. Will also make a screenshot after each step in case of SeleniumDriver. |
+| `NeosTrait` | Neos Related features, e.g to create pages and set properties etc. |
+
 
 #### Example Scenario
 

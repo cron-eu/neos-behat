@@ -8,8 +8,10 @@
 
 namespace CRON\Behat\Service;
 
-use Neos\Flow\Annotations as Flow;
-use Neos\Media\Domain\Model\Image;
+use /** @noinspection PhpUnusedAliasInspection */
+    Neos\Flow\Annotations as Flow;
+
+    use Neos\Media\Domain\Model\Image;
 
 /**
  * @Flow\Scope("singleton")

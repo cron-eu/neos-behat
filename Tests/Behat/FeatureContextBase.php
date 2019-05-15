@@ -8,21 +8,16 @@
 
 namespace CRON\Behat;
 
-use Neos\Utility\Arrays;
-use Behat\Gherkin\Node\TableNode;
-use PHPUnit_Framework_Assert as Assert;
-
-//require_once(__DIR__ . '/../../../../../../Application/Flowpack.Behat/Tests/Behat/FlowContext.php');
-require_once(__DIR__ . '/FlowContext.php');
-require_once(__DIR__ . '/NeosTrait.php');
+require_once(__DIR__ . '/../../../../Application/Neos.Behat/Tests/Behat/FlowContextTrait.php');
+require_once(__DIR__ . '/../../../../Application/Neos.ContentRepository/Tests/Behavior/Features/Bootstrap/NodeOperationsTrait.php');
 require_once(__DIR__ . '/../../../../Framework/Neos.Flow/Tests/Behavior/Features/Bootstrap/IsolatedBehatStepsTrait.php');
 require_once(__DIR__ . '/../../../../Framework/Neos.Flow/Tests/Behavior/Features/Bootstrap/SecurityOperationsTrait.php');
 
-if (file_exists(__DIR__ . '/../../../../Application/Neos.ContentRepository/Tests/Behavior/Features/Bootstrap/NodeOperationsTrait.php')) {
-    require_once(__DIR__ . '/../../../../Application/Neos.ContentRepository/Tests/Behavior/Features/Bootstrap/NodeOperationsTrait.php');
-} else {
-    require_once(__DIR__ . '/../../../../Neos/Neos.ContentRepository/Tests/Behavior/Features/Bootstrap/NodeOperationsTrait.php');
-}
+use Behat\MinkExtension\Context\MinkContext;
+use Neos\ContentRepository\Service\AuthorizationService;
+use Neos\Flow\Utility\Environment;
+use Neos\Utility\Arrays;
+use Behat\Gherkin\Node\TableNode;
 
 /**
  * Class FeatureContextBase
@@ -32,13 +27,13 @@ if (file_exists(__DIR__ . '/../../../../Application/Neos.ContentRepository/Tests
  * This class implements some basic NEOS Backend steps and should be extended by the specific FeatureContext
  *
  */
-class FeatureContextBase extends \Behat\MinkExtension\Context\MinkContext
+class FeatureContextBase extends MinkContext
 {
 
+    use \Neos\Behat\Tests\Behat\FlowContextTrait;
     use \Neos\ContentRepository\Tests\Behavior\Features\Bootstrap\NodeOperationsTrait;
     use \Neos\Flow\Tests\Behavior\Features\Bootstrap\IsolatedBehatStepsTrait;
     use \Neos\Flow\Tests\Behavior\Features\Bootstrap\SecurityOperationsTrait;
-    use NeosTrait;
 
     /**
      * @var string
@@ -63,10 +58,15 @@ class FeatureContextBase extends \Behat\MinkExtension\Context\MinkContext
      *
      * @param array $parameters Context parameters (configured through behat.yml)
      */
-    public function __construct(array $parameters)
+    public function __construct()
     {
-        $this->useContext('flow', new FlowContext($parameters));
-        $this->objectManager = $this->getSubcontext('flow')->getObjectManager();
+        if (self::$bootstrap === null) {
+            self::$bootstrap = $this->initializeFlow();
+        }
+        $this->objectManager = self::$bootstrap->getObjectManager();
+        $this->environment = $this->objectManager->get(Environment::class);
+
+        $this->nodeAuthorizationService = $this->objectManager->get(AuthorizationService::class);
         $this->setupSecurity();
     }
 
@@ -98,9 +98,11 @@ class FeatureContextBase extends \Behat\MinkExtension\Context\MinkContext
     {
         /** @var \Neos\Neos\Domain\Service\SiteImportService $siteImportService */
         $siteImportService = $this->objectManager->get(\Neos\Neos\Domain\Service\SiteImportService::class);
-        $siteImportService->importFromPackage($packageKey);
+        $this->securityContext->withoutAuthorizationChecks(function () use ($siteImportService, $packageKey) {
+            $siteImportService->importFromPackage($packageKey);
+        });
 
-        $this->getSubcontext('flow')->persistAll();
+        $this->persistAll();
         $this->resetNodeInstances();
     }
 
@@ -181,12 +183,12 @@ class FeatureContextBase extends \Behat\MinkExtension\Context\MinkContext
             }, Arrays::trimExplode(',', $row['roles']));
             if ($user = $userService->getUser($row['username'])) {
                 $userService->deleteUser($user);
-                $this->getSubcontext('flow')->persistAll();
+                $this->persistAll();
             }
             $userService->createUser($row['username'], $row['password'], $row['firstname'], $row['lastname'],
                 $roleIdentifiers);
         }
-        $this->getSubcontext('flow')->persistAll();
+        $this->persistAll();
     }
 
     /**
@@ -266,8 +268,10 @@ class FeatureContextBase extends \Behat\MinkExtension\Context\MinkContext
     public function iSelectTheNeosInspector()
     {
         // wait 30 seconds for the NEOS BE to appear
-        $this->getSession()->wait(30000, '$("#neos-inspector").length > 0');
-        $this->selectedContentElement = $this->assertSession()->elementExists('css', '.neos-inspector-form');
+#        $this->getSession()->wait(30000, '$("#neos-inspector").length > 0');
+        $this->getSession()->wait(30000, 'document.getElementById("neos-Inspector")');
+        $this->selectedContentElement = $this->assertSession()->elementExists('css', '#neos-Inspector button[aria-controls="section1"]');
+        $this->selectedContentElement->click();
     }
 
     /**
@@ -275,17 +279,10 @@ class FeatureContextBase extends \Behat\MinkExtension\Context\MinkContext
      */
     public function iOpenTheDatePicker($nth = 1)
     {
-        // wait for the date picker to be fully loaded
-        $this->getSession()->wait(10000, '$("#neos-inspector input.neos-editor-datetimepicker-hrvalue").length > 0');
-
-        // scroll to it, if not visible yet (else we cannot click on it)
-        $this->getSession()->executeScript('$("#neos-inspector input.neos-editor-datetimepicker-hrvalue")[' . ($nth-1) . '].scrollIntoView(true);');
-
-        $this->assertSession()->elementExists('xpath', '(//div[@class="neos-inspector-datetime-editor"])[' . $nth . ']//input[contains(@class, "neos-editor-datetimepicker-hrvalue")]',
-            $this->selectedContentElement)->click();
-
-        // wait to fully expand
-        $this->getSession()->wait(10000, '$("#neos-inspector div.neos-editor-datetimepicker").is(":visible")');
+        // TODO: make this work with the Neos 4.x Backend
+//        $this->getSession()->wait(30000, 'document.getElementById("__neos__editor__property---_hiddenBeforeDateTime")');
+//        $dateInputField = $this->assertSession()->elementExists('css', '#__neos__editor__property---_hiddenBeforeDateTime');
+//        $dateInputField->click();
     }
 
     /**
@@ -293,9 +290,10 @@ class FeatureContextBase extends \Behat\MinkExtension\Context\MinkContext
      */
     public function clickOnTodayInTheDatePicker($nth = 1)
     {
-        $this->getSession()->wait(10000, '$(".neos-datetimepicker-days .neos-today").is(":visible")');
-        $this->assertSession()->elementExists('xpath', '(//div[contains(@class,"date-time-editor")])[' . $nth . ']//div[contains(@class,"neos-datetimepicker-days")]//th[contains(@class, "neos-today")]',
-            $this->selectedContentElement)->click();
+        // TODO: make this work with the Neos 4.x Backend
+//        $this->getSession()->wait(10000, '$("button.style__selectTodayBtn___2Th-D").is(":visible")');
+//        $todayBtn = $this->assertSession()->elementExists('css', 'button.style__selectTodayBtn___2Th-D');
+//        $todayBtn->click();
     }
 
     /**

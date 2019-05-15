@@ -10,46 +10,70 @@ namespace CRON\Behat;
 
 use Behat\Gherkin\Node\TableNode;
 use CRON\Behat\Service\SampleImageService;
-use PHPUnit_Framework_Assert as Assert;
+use Neos\ContentRepository\Domain\Service\ContextFactoryInterface;
+use Neos\ContentRepository\Domain\Service\NodeTypeManager;
+use Neos\Media\Domain\Model\ImageInterface;
+use Neos\Neos\Domain\Repository\SiteRepository;
+use Neos\Neos\Domain\Service\ContentContext;
+use PHPUnit\Framework\Assert;
+
+require_once(__DIR__ . '/../../../../Application/Neos.Behat/Tests/Behat/FlowContextTrait.php');
+require_once(__DIR__ . '/../../../../Framework/Neos.Flow/Tests/Behavior/Features/Bootstrap/SecurityOperationsTrait.php');
 
 trait NeosTrait
 {
-
-    protected $context = null;
+    use \Neos\Behat\Tests\Behat\FlowContextTrait;
+    use \Neos\Flow\Tests\Behavior\Features\Bootstrap\SecurityOperationsTrait;
 
     /**
-     * @return \Neos\Neos\Domain\Service\ContentContext
+     * @var \Neos\Flow\ObjectManagement\ObjectManagerInterface
      */
-    protected function getContext()
+    protected $objectManager;
+
+    /**
+     * @var ContentContext[]
+     */
+    protected $context = [];
+
+    /**
+     * Get the context for the specific workspace. Subsequent calls will retrieve the same instance
+     *
+     * @param string $workspaceName workspace name, defaults to 'live'
+     *
+     * @return ContentContext
+     */
+    protected function getContext($workspaceName = 'live')
     {
-
-        if ($this->context === null) {
-            /** @var \Neos\Neos\Domain\Repository\SiteRepository $siteRepository */
-            $siteRepository = $this->objectManager->get(\Neos\Neos\Domain\Repository\SiteRepository::class);
-
-            /** @var \Neos\ContentRepository\Domain\Service\ContextFactoryInterface $contextFactory */
-            $contextFactory = $this->objectManager->get(\Neos\ContentRepository\Domain\Service\ContextFactoryInterface::class);
-            $this->context = $contextFactory->create([
+        if (!isset($this->context[$workspaceName])) {
+            /** @var SiteRepository $siteRepository */
+            $siteRepository = $this->objectManager->get(SiteRepository::class);
+            /** @var ContextFactoryInterface $contextFactory */
+            $contextFactory = $this->objectManager->get(ContextFactoryInterface::class);
+            $this->context[$workspaceName] = $contextFactory->create([
                 'currentSite' => $siteRepository->findFirstOnline(),
                 'invisibleContentShown' => true,
+                'workspaceName' => $workspaceName,
             ]);
         }
-
-        return $this->context;
+        return $this->context[$workspaceName];
     }
 
     /** @var \Neos\ContentRepository\Domain\Model\NodeInterface */
     protected $node = null;
+
     /** @var string */
     protected $nodeIdentifier = null;
+
+    /** @var string */
+    protected $nodeWorkspaceName = null;
 
     /**
      * @return \Neos\ContentRepository\Domain\Model\NodeInterface
      */
     protected function getNode()
     {
-        if ($this->node === null && $this->nodeIdentifier !== null) {
-            $this->node = $this->getContext()->getNodeByIdentifier($this->nodeIdentifier);
+        if ($this->node === null && $this->nodeIdentifier !== null && $this->nodeWorkspaceName !== null) {
+            $this->node = $this->getContext($this->nodeWorkspaceName)->getNodeByIdentifier($this->nodeIdentifier);
         }
 
         return $this->node;
@@ -59,17 +83,21 @@ trait NeosTrait
     {
         $this->node = $node;
         $this->nodeIdentifier = $node->getIdentifier();
+        $this->nodeWorkspaceName = $node->getWorkspace()->getName();
     }
 
+    /**
+     * @var NodeTypeManager
+     */
     protected $nodeTypeManager;
 
     /**
-     * @return \Neos\ContentRepository\Domain\Service\NodeTypeManager
+     * @return NodeTypeManager
      */
     protected function getNodeTypeManager()
     {
         if ($this->nodeTypeManager === null) {
-            $this->nodeTypeManager = $this->objectManager->get(\Neos\ContentRepository\Domain\Service\NodeTypeManager::class);
+            $this->nodeTypeManager = $this->objectManager->get(NodeTypeManager::class);
         }
 
         return $this->nodeTypeManager;
@@ -79,22 +107,23 @@ trait NeosTrait
      * Gets an existing node or page on path
      *
      * @param $path string absolute path, relative to /sites/my-site-name, e.g. /home
+     * @param string $workspace workspace name, defaults to 'live'
      *
      * @return \Neos\ContentRepository\Domain\Model\NodeInterface
      */
-    protected function getNodeForPath($path)
+    protected function getNodeForPath($path, $workspace = 'live')
     {
         $path = strpos('/sites', $path) === 0 ? $path : $this->getContext()->getCurrentSiteNode()->getPath() . $path;
-
-        return $this->getContext()->getNode($path);
+        $context = $this->getContext($workspace);
+        return $context->getNode($path);
     }
 
     protected function persist()
     {
-        $this->getSubcontext('flow')->persistAll();
+        $this->persistAll();
         $this->resetNodeInstances();
         $this->node = null;
-        $this->context = null;
+        $this->context = [];
     }
 
     /**
@@ -135,7 +164,7 @@ trait NeosTrait
                 $value = boolval($stringInput);
                 break;
 
-            case \Neos\Media\Domain\Model\ImageInterface::class:
+            case ImageInterface::class:
                 if ($stringInput) {
                     /** @var SampleImageService $imageService */
                     $imageService = $this->objectManager->get(SampleImageService::class);
@@ -159,15 +188,16 @@ trait NeosTrait
      */
     public function iSetThePageProperties(TableNode $table)
     {
-        Assert::assertNotNull($this->getNode());
-        foreach ($table->getRows() as $row) {
-            list($propertyName, $propertyValue) = $row;
-            $value = $this->propertyMapper($propertyName, $propertyValue);
-            $this->getNode()->setProperty($propertyName, $value);
-        }
-
-        $this->persist();
-        $this->clearContentCache();
+        $this->securityContext->withoutAuthorizationChecks(function () use ($table) {
+            Assert::assertNotNull($this->getNode());
+            foreach ($table->getRows() as $row) {
+                list($propertyName, $propertyValue) = $row;
+                $value = $this->propertyMapper($propertyName, $propertyValue);
+                $this->getNode()->setProperty($propertyName, $value);
+            }
+            $this->persist();
+            $this->clearContentCache();
+        });
     }
 
     /**
@@ -175,10 +205,21 @@ trait NeosTrait
      */
     public function iCreateANewPageOfTypeOnPath($title, $type, $path)
     {
-        $type = $this->getNodeTypeManager()->getNodeType($type);
-        $folder = $this->getNodeForPath($path);
-        $this->setNode($folder->createNode($title, $type));
-        $this->persist();
+        $this->iCreateANewPageOfTypeOnPathInWorkspace($title, $type, $path, 'live');
+    }
+
+    /**
+     * @Given /^I create a new Page "([^"]*)" of type "([^"]*)" on path "([^"]*)" in workspace "([^"]*)"$/
+     */
+    public function iCreateANewPageOfTypeOnPathInWorkspace($title, $type, $path, $workspace)
+    {
+        $this->securityContext->withoutAuthorizationChecks(function () use ($type, $path, $workspace, $title) {
+            $type = $this->getNodeTypeManager()->getNodeType($type);
+            $folder = $this->getNodeForPath($path, $workspace);
+            $this->setNode($folder->createNode($title, $type));
+            Assert::assertNotNull($this->node);
+            $this->persist();
+        });
     }
 
     /**
@@ -235,4 +276,53 @@ trait NeosTrait
     {
         sleep($seconds);
     }
+
+    /**
+     * @Given /^I publish the current workspace$/
+     */
+    public function iPublishTheCurrentWorkspace()
+    {
+        $this->securityContext->withoutAuthorizationChecks(function () {
+            Assert::assertNotNull($this->nodeWorkspaceName, 'no current workspace set');
+            $liveWorkspace = $this->getContext()->getWorkspace();
+            $this->getContext($this->nodeWorkspaceName)->getWorkspace()->publish($liveWorkspace);
+            $this->persist();
+        });
+    }
+    /**
+     * @Given /^the page should be visible$/
+     */
+    public function thePageShouldBeVisible()
+    {
+        Assert::assertTrue($this->getNode()->isVisible());
+    }
+    /**
+     * @Given /^the page should not be visible$/
+     */
+    public function thePageShouldNotBeVisible()
+    {
+        Assert::assertFalse($this->getNode()->isVisible());
+    }
+
+    /**
+     * @Given /^I set the node "([^"]*)" property to the current date$/
+     */
+    public function iSetTheNodePropertyToTheCurrentDate($propertyName)
+    {
+        $date = new \DateTime();
+        // set 5 minutes ago, to prevent race conditions where the article not being shown in FE
+        $date->sub(new \DateInterval('PT5M'));
+        $this->iSetTheNodePropertyTo($propertyName, $date);
+    }
+    /**
+     * @Given /^I set the node "([^"]*)" property to the date "([^"]*)"$/
+     */
+    public function iSetTheNodePropertyToTheGivenDate($propertyName, $dateString)
+    {
+        $date = new \DateTime($dateString);
+        // set 5 minutes ago, to prevent race conditions where the article not being shown in FE
+        $date->sub(new \DateInterval('PT5M'));
+        $this->iSetTheNodePropertyTo($propertyName, $date);
+    }
+
 }
