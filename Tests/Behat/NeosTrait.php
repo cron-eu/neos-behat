@@ -12,6 +12,7 @@ use Behat\Gherkin\Node\TableNode;
 use CRON\Behat\Service\SampleImageService;
 use Neos\ContentRepository\Domain\Service\ContextFactoryInterface;
 use Neos\ContentRepository\Domain\Service\NodeTypeManager;
+use Neos\Flow\Persistence\PersistenceManagerInterface;
 use Neos\Media\Domain\Model\ImageInterface;
 use Neos\Neos\Domain\Repository\SiteRepository;
 use Neos\Neos\Domain\Service\ContentContext;
@@ -120,7 +121,7 @@ trait NeosTrait
 
     protected function persist()
     {
-        $this->persistAll();
+        $this->objectManager->get(PersistenceManagerInterface::class)->persistAll();
         $this->resetNodeInstances();
         $this->node = null;
         $this->context = [];
