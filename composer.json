@@ -2,8 +2,9 @@
     "name": "cron/neos-behat",
     "type": "neos-package",
     "description": "Neos Behat Addons",
-    "require": {
-	    "typo3/neos": "~3.0"
+    "require-dev": {
+	    "neos/neos": "~4.0",
+	    "neos/behat": "dev-master"
     },
     "autoload": {
         "psr-4": {
