@@ -107,15 +107,25 @@ trait NeosTrait
     /**
      * Gets an existing node or page on path
      *
-     * @param $path string absolute path, relative to /sites/my-site-name, e.g. /home
+     * @param $path string absolute or relative (to the current site root node) path.
      * @param string $workspace workspace name, defaults to 'live'
      *
      * @return \Neos\ContentRepository\Domain\Model\NodeInterface
      */
     protected function getNodeForPath($path, $workspace = 'live')
     {
-        $path = strpos($path, '/sites') === 0 ? $path : $this->getContext()->getCurrentSiteNode()->getPath() . '/' . $path;
         $context = $this->getContext($workspace);
+
+        // if the path is absolute, use it "as is"
+        if (strpos($path, '/sites') !== 0) {
+            // strip the leading slash from the path
+            $path = preg_replace('/^\//', '', $path);
+            $pathComponents = [$context->getCurrentSiteNode()->getPath()];
+            if ($path !== "") {
+                $pathComponents[] = $path;
+            }
+            $path = join('/', $pathComponents);
+        }
         return $context->getNode($path);
     }
 
@@ -186,8 +196,9 @@ trait NeosTrait
 
     /**
      * @When /^I set the page properties:$/
+     * @When /^I set the node properties:$/
      */
-    public function iSetThePageProperties(TableNode $table)
+    public function iSetTheNodeProperties(TableNode $table)
     {
         $this->securityContext->withoutAuthorizationChecks(function () use ($table) {
             Assert::assertNotNull($this->getNode());
@@ -203,21 +214,23 @@ trait NeosTrait
 
     /**
      * @Given /^I create a new Page "([^"]*)" of type "([^"]*)" on path "([^"]*)"$/
+     * @Given /^I create a new node "([^"]*)" of type "([^"]*)" on path "([^"]*)"$/
      */
-    public function iCreateANewPageOfTypeOnPath($title, $type, $path)
+    public function iCreateANewNodeOfTypeOnPath($name, $type, $path)
     {
-        $this->iCreateANewPageOfTypeOnPathInWorkspace($title, $type, $path, 'live');
+        $this->iCreateANewNodeOfTypeOnPathInWorkspace($name, $type, $path, 'live');
     }
 
     /**
      * @Given /^I create a new Page "([^"]*)" of type "([^"]*)" on path "([^"]*)" in workspace "([^"]*)"$/
+     * @Given /^I create a new node "([^"]*)" of type "([^"]*)" on path "([^"]*)" in workspace "([^"]*)"$/
      */
-    public function iCreateANewPageOfTypeOnPathInWorkspace($title, $type, $path, $workspace)
+    public function iCreateANewNodeOfTypeOnPathInWorkspace($name, $type, $path, $workspace)
     {
-        $this->securityContext->withoutAuthorizationChecks(function () use ($type, $path, $workspace, $title) {
+        $this->securityContext->withoutAuthorizationChecks(function () use ($type, $path, $workspace, $name) {
             $type = $this->getNodeTypeManager()->getNodeType($type);
             $folder = $this->getNodeForPath($path, $workspace);
-            $this->setNode($folder->createNode($title, $type));
+            $this->setNode($folder->createNode($name, $type));
             Assert::assertNotNull($this->node);
             $this->persist();
         });
@@ -225,8 +238,9 @@ trait NeosTrait
 
     /**
      * @Given /^I should have a Page of type "([^"]*)" on path "([^"]*)"$/
+     * @Given /^I should have a node of type "([^"]*)" on path "([^"]*)"$/
      */
-    public function iShouldHaveAPageOfTypeOnPath($nodeType, $path)
+    public function iShouldHaveANodeOfTypeOnPath($nodeType, $path)
     {
         $node = $this->getNodeForPath($path);
         Assert::assertNotNull($node);
@@ -236,8 +250,9 @@ trait NeosTrait
 
     /**
      * @Then /^I should get the page properties:$/
+     * @Then /^I should get the node properties:$/
      */
-    public function iShouldGetThePageProperties(TableNode $table)
+    public function iShouldGetTheNodeProperties(TableNode $table)
     {
         Assert::assertNotNull($this->getNode());
         foreach ($table->getRows() as $row) {
