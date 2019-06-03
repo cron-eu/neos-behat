@@ -114,7 +114,7 @@ trait NeosTrait
      */
     protected function getNodeForPath($path, $workspace = 'live')
     {
-        $path = strpos('/sites', $path) === 0 ? $path : $this->getContext()->getCurrentSiteNode()->getPath() . $path;
+        $path = strpos($path, '/sites') === 0 ? $path : $this->getContext()->getCurrentSiteNode()->getPath() . '/' . $path;
         $context = $this->getContext($workspace);
         return $context->getNode($path);
     }
