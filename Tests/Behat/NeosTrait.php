@@ -14,6 +14,7 @@ use Neos\ContentRepository\Domain\Service\ContextFactoryInterface;
 use Neos\ContentRepository\Domain\Service\NodeTypeManager;
 use Neos\Flow\Persistence\PersistenceManagerInterface;
 use Neos\Media\Domain\Model\ImageInterface;
+use Neos\Neos\Domain\Model\Site;
 use Neos\Neos\Domain\Repository\SiteRepository;
 use Neos\Neos\Domain\Service\ContentContext;
 use PHPUnit\Framework\Assert;
@@ -339,6 +340,28 @@ trait NeosTrait
         // set 5 minutes ago, to prevent race conditions where the article not being shown in FE
         $date->sub(new \DateInterval('PT5M'));
         $this->iSetTheNodePropertyTo($propertyName, $date);
+    }
+
+    /**
+     * @Given /^I create an empty site with package key "([^"]*)" named "([^"]*)" with a root node of type "([^"]*)"$/
+     */
+    public function iCreateAnEmptySiteNamedWithARootNodeOfType($packageKey, $siteName, $rootNodeTypeName)
+    {
+        /** @var SiteRepository */
+        $siteRepository = $this->objectManager->get(SiteRepository::class);
+        $site = new Site($siteName);
+        $site->setSiteResourcesPackageKey($packageKey);
+        $site->setState(Site::STATE_ONLINE);
+        $siteRepository->add($site);
+
+        /** @var NodeTypeManager $nodeTypeManager */
+        $nodeTypeManager = $this->objectManager->get(NodeTypeManager::class);
+        $nodeType = $nodeTypeManager->getNodeType($rootNodeTypeName);
+
+        $rootNode = $this->getContext()->getRootNode();
+        $sitesNode = $rootNode->createNode('sites', $nodeTypeManager->getNodeType('unstructured'));
+        $sitesNode->createNode($siteName, $nodeType);
+        $this->persist();
     }
 
 }
