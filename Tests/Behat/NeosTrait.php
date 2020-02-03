@@ -343,6 +343,17 @@ trait NeosTrait
     }
 
     /**
+     * @Given /^I set the node "([^"]*)" property to the current date and sub a date interval "([^"]*)"$/
+     */
+    public function iSetTheNodePropertyToTheCurrentDateAndSubADateInterval($propertyName, $intervalString)
+    {
+        $date = new \DateTime();
+        $date->sub(new \DateInterval($intervalString));
+        $this->iSetTheNodePropertyTo($propertyName, $date);
+    }
+
+
+    /**
      * @Given /^I create an empty site with package key "([^"]*)" named "([^"]*)" with a root node of type "([^"]*)"$/
      */
     public function iCreateAnEmptySiteNamedWithARootNodeOfType($packageKey, $siteName, $rootNodeTypeName)
