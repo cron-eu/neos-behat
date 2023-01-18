@@ -4,7 +4,7 @@
     "description": "Neos Behat Addons",
     "require-dev": {
 	    "neos/neos": "~4.0",
-	    "neos/behat": "dev-master"
+	    "neos/behat": "*"
     },
     "autoload": {
         "psr-4": {
